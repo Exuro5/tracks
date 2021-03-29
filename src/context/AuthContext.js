@@ -1,9 +1,16 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import createDataContext from './createDataContext';
+import trackerApi from '../api/tracker';
+import { navigate } from '../navigationRef';
 
 
 //Defines different action functions
 const authReducer = (state, action) => {
     switch (action.type) {
+        case 'signup':
+            return { token: action.payload, errorMessage: '' }
+        case 'add_error':
+            return {...state, errorMessage: action.payload}
         default:
             return state;
     }
@@ -11,16 +18,24 @@ const authReducer = (state, action) => {
 
 //action function is called with dispatch and return a function to be executed inside component.
 //this is to allow access to dispatch in ./createDataContext.
-const signup = (dispatch) => {
-    //think about what infomation needs to be accessed/fed in.
-    return ({ email, password }) => {
+const signup = (dispatch) => async ({ email, password }) => {
         //We need to access API/mongodb to signup with user chosen email/password.
+        try {
+            const response = await trackerApi.post('/signup', { email, password });
 
-        //After sign up is complete a value should be returned and isSignedIn should be set to 'true' by updateing state.
+            await AsyncStorage.setItem('token', response.data.token)
+            
+            dispatch({ type: 'signup', payload: response.data.token });
+            
+            //Navigates to TrackList using navigationRef.js
+            navigate('TrackList')
 
-        //If sign up fails we should show error message
+        } catch (err) {
+            dispatch({ type: 'add_error', payload: err.message })
+        }
+       
     };
-};
+
 
 const signin = (dispatch) => {
     return ({ email, password }) => {
@@ -40,5 +55,5 @@ const signout = (dispatch) => {
 export const { Provider, Context} = createDataContext(
     authReducer, //first argument refers to reducer
     { signin, signout, signup }, //exports action functions to rest of application
-    { isSignedIn: false} //default value
+    { token: null, errorMessage: ''} //default value
 )
