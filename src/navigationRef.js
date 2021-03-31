@@ -1,3 +1,6 @@
+
+//Use this only when is necessary as it can be janky.
+
 import { NavigationActions } from 'react-navigation'
 
 
