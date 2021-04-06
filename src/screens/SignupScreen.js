@@ -14,7 +14,7 @@ const SignupScreen = () => {
     return (
         <View style={styles.container}>
             <NavigationEvents 
-                onWillBlur={clearErrorMessage}
+                onWillFocus={clearErrorMessage}
             />
             <AuthenticationForm 
                 formHeader='Sign Up for Tracker' 

@@ -13,7 +13,7 @@ const SigninScreen = () => {
     return (
         <View style={styles.container}>
             <NavigationEvents 
-                onDidBlur={clearErrorMessage}
+                onWillFocus={clearErrorMessage}
             />
             <AuthenticationForm 
                 formHeader='Sign In for Tracker' 
