@@ -1,48 +1,32 @@
 import '../_mockLocation';
-
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useContext, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text, Button } from 'react-native-elements';
-import { requestPermissionsAsync, watchPositionAsync, Accuracy } from 'expo-location';
+import { Text } from 'react-native-elements';
+import { withNavigationFocus } from 'react-navigation'; //withNavigation focus has new prop(isFocused) and tells app if the user is currently on this page. Must wrap export to use it.
 import Map from '../components/Map';
 import { Context as LocationContext } from '../context/LocationContext';
+import useLocation from '../hooks/useLocation';
+import TrackForm from '../components/TrackForm';
 
 
-const TrackCreateScreen = () => {
+const TrackCreateScreen = ({ isFocused }) => {
 
-    const { addLocation } = useContext(LocationContext);
-    const [err, setErr] = useState(null);
+    const { state, addLocation } = useContext(LocationContext);
+    const callback = useCallback(location => {
+        addLocation(location, state.recording)
+    }, [state.recording]);
+
+    //Calls useLocation hook
+    const [err] = useLocation(isFocused, callback); 
 
     
-    const startWatching = async () => {
-        try {
-          const { granted } = await requestPermissionsAsync();
-          if (!granted) {
-            throw new Error('Location permission not granted');
-          } 
-          await watchPositionAsync({
-              accuracy: Accuracy.BestForNavigation,
-              timeInterval: 1000,
-              distanceInterval: 10
-          }, (location) => {
-            addLocation(location)
-          })
-
-        } catch (e) {
-          setErr(e);
-        }
-      };
-    
-
-    useEffect(() => {
-        startWatching();
-    }, []);
 
     return (
         <View style={styles.container} >
             <Text style={styles.header}>TrackCreateScreen</Text>
             <Map />
             { err ? <Text h1>Please enable location</Text> : null}
+            <TrackForm />
         </View>
     )
 };
@@ -62,4 +46,6 @@ const styles = StyleSheet.create({
     }
 });
 
-export default TrackCreateScreen;
+
+
+export default withNavigationFocus(TrackCreateScreen);
